@@ -1,0 +1,10 @@
+-- GPA Table
+
+CREATE TABLE gpa_records (
+    gpa_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT,
+    semester VARCHAR(20),
+    sgpa DOUBLE,
+    cgpa DOUBLE,
+    FOREIGN KEY (student_id) REFERENCES students(id)
+);
