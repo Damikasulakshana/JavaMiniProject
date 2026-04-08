@@ -1,0 +1,16 @@
+-- Grades table
+
+CREATE TABLE grades (
+    grade_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT,
+    course_id INT,
+    semester VARCHAR(20),
+    ca_mark DOUBLE,
+    final_mark DOUBLE,
+    total_mark DOUBLE,
+    letter_grade VARCHAR(5),
+    grade_point DOUBLE,
+    credits INT,
+    FOREIGN KEY (student_id) REFERENCES students(id),
+    FOREIGN KEY (course_id) REFERENCES courses(id)
+);
