@@ -1,0 +1,67 @@
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE `users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `full_name` varchar(100) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `role` enum('ADMIN','LECTURER','STUDENT','TECH') NOT NULL,
+  `dept` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`)
+);
+
+DROP TABLE IF EXISTS `courses`;
+CREATE TABLE `courses` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `course_code` varchar(20) NOT NULL,
+  `course_name` varchar(100) NOT NULL,
+  `credits` int NOT NULL,
+  `lecturer_id` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `course_code` (`course_code`),
+  KEY `lecturer_id` (`lecturer_id`),
+  CONSTRAINT `courses_ibfk_1` FOREIGN KEY (`lecturer_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+);
+
+
+INSERT INTO `users` (`id`, `username`, `password`, `full_name`, `email`, `phone`, `role`, `dept`) VALUES 
+(1,'admin','admin123','System Admin','admin@fot.ruh.ac.lk','0771000000','ADMIN',NULL),
+(2,'lec001','lec123','Dr. Kamal Silva','kamal_2023@fot.ruh.ac.lk','0771000001','LECTURER','ICT'),
+(3,'lec002','lec123','Dr. Nimal Fernando','nimal_2023@fot.ruh.ac.lk','0771000002','LECTURER','ICT'),
+(4,'lec003','lec123','Ms. Dilani Perera','dilani_2023@fot.ruh.ac.lk','0771000003','LECTURER','ICT'),
+(5,'lec004','lec123','Mr. Roshan Jayawardena','roshan_2023@fot.ruh.ac.lk','0771000004','LECTURER','ICT'),
+(6,'lec005','lec123','Dr. Amara Wickramasinghe','amara_2023@fot.ruh.ac.lk','0771000005','LECTURER','ICT'),
+(7,'tech001','tech123','Sunil Rathnayake','sunil_2023@fot.ruh.ac.lk','0771000006','TECH','ICT'),
+(8,'tech002','tech123','Priyanka Madushani','priyanka_2023@fot.ruh.ac.lk','0771000007','TECH','ICT'),
+(9,'tech003','tech123','Chaminda Kumara','chaminda_2023@fot.ruh.ac.lk','0771000008','TECH','ICT'),
+(10,'tech004','tech123','Samantha De Silva','samantha_2023@fot.ruh.ac.lk','0771000009','TECH','ICT'),
+(11,'TG1701','stu123','Ashan Bandara','ashan_20231701@fot.ruh.ac.lk','0771100001','STUDENT','ICT'),
+(12,'TG1702','stu123','Bhagya Disanayake','bhagya_20231702@fot.ruh.ac.lk','0771100002','STUDENT','ICT'),
+(13,'TG17013','stu123','Chathuri Wijesinghe','chathuri_202317013@fot.ruh.ac.lk','0771100003','STUDENT','ICT'),
+(14,'TG1704','stu123','Danushka Rajapaksa','danushka_20231704@fot.ruh.ac.lk','0771100004','STUDENT','ICT'),
+(15,'TG1705','stu123','Erangi Samaraweera','erangi_20231705@fot.ruh.ac.lk','0771100005','STUDENT','ICT'),
+(16,'TG1706','stu123','Fathima Nusra','fathima_20231706@fot.ruh.ac.lk','0771100006','STUDENT','ICT'),
+(17,'TG1707','stu123','Gimhan Senevirathne','gimhan_20231707@fot.ruh.ac.lk','0771100007','STUDENT','ICT'),
+(18,'TG1708','stu123','Hasini Kodithuwakku','hasini_20231708@fot.ruh.ac.lk','0771100008','STUDENT','ICT'),
+(19,'TG1709','stu123','Isuru Pathirana','isuru_20231709@fot.ruh.ac.lk','0771100009','STUDENT','ICT'),
+(20,'TG1710','stu123','Janani Kumari','janani_20231710@fot.ruh.ac.lk','0771100010','STUDENT','ICT'),
+(21,'TG1711','stu123','Kasun Weerasekara','kasun_20231711@fot.ruh.ac.lk','0771100011','STUDENT','ICT'),
+(22,'TG1712','stu123','Lakmali Tennakoon','lakmali_20231712@fot.ruh.ac.lk','0771100012','STUDENT','ICT'),
+(23,'TG1713','stu123','Mahesh Gunawardena','mahesh_20231713@fot.ruh.ac.lk','0771100013','STUDENT','ICT'),
+(24,'TG1714','stu123','Nishani Liyanage','nishani_20231714@fot.ruh.ac.lk','0771100014','STUDENT','ICT'),
+(25,'TG1715','stu123','Osanda Dissanayake','osanda_20231715@fot.ruh.ac.lk','0771100015','STUDENT','ICT'),
+(26,'TG1716','stu123','Pavithra Rupasinghe','pavithra_20231716@fot.ruh.ac.lk','0771100016','STUDENT','ICT'),
+(27,'TG1717','stu123','Qushan Ahamed','qushan_20231717@fot.ruh.ac.lk','0771100017','STUDENT','ICT'),
+(28,'TG1718','stu123','Ravindu Gunasekara','ravindu_20231718@fot.ruh.ac.lk','0771100018','STUDENT','ICT'),
+(29,'TG1719','stu123','Sajith Mendis','sajith_20231719@fot.ruh.ac.lk','0771100019','STUDENT','ICT'),
+(30,'TG1720','stu123','Tharushi Gallage','tharushi_20231720@fot.ruh.ac.lk','0771100020','STUDENT','ICT');
+
+
+INSERT INTO `courses` (`id`, `course_code`, `course_name`, `credits`, `lecturer_id`) VALUES 
+(1,'ICT2132','Object Oriented Programming Practicum',3,1),
+(2,'ICT2122','Data Structures and Algorithms',3,2),
+(3,'ICT2112','Database Management Systems',3,3),
+(4,'ICT2142','Web Technologies',3,4),
+(5,'ICT2152','Computer Networks',3,5);
