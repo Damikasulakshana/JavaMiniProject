@@ -1,0 +1,166 @@
+-- ============================================================
+-- FOT SYSTEM  –  Members 2, 3 & 4  –  Extra Tables
+-- Run this AFTER Member 1's FOT.sql
+-- ============================================================
+
+USE faculty_db;
+
+-- ============================================================
+-- MEMBER 2 – Attendance & Medical
+-- ============================================================
+
+-- One row per subject per student per session
+DROP TABLE IF EXISTS attendance;
+CREATE TABLE attendance (
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    student_id   VARCHAR(20) NOT NULL,          -- e.g. TG1701
+    course_code  VARCHAR(20) NOT NULL,           -- e.g. ICT2132
+    session_no   INT         NOT NULL,           -- 1 – 15
+    session_type VARCHAR(10) NOT NULL,           -- THEORY or PRACTICAL
+    is_present   TINYINT(1)  NOT NULL DEFAULT 0, -- 1=present, 0=absent
+    session_date DATE        NOT NULL
+);
+
+-- Medical records submitted by students / entered by TO
+DROP TABLE IF EXISTS medicals;
+CREATE TABLE medicals (
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    student_id   VARCHAR(20) NOT NULL,
+    from_date    DATE        NOT NULL,
+    to_date      DATE        NOT NULL,
+    reason       TEXT,
+    is_approved  TINYINT(1)  DEFAULT 0,          -- 0=pending, 1=approved
+    submitted_at TIMESTAMP   DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================================
+-- MEMBER 3 – Marks & Grading
+-- ============================================================
+
+-- Marks per student per course (CA and Final separately)
+DROP TABLE IF EXISTS marks;
+CREATE TABLE marks (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    student_id  VARCHAR(20) NOT NULL,
+    course_code VARCHAR(20) NOT NULL,
+    ca_marks    DOUBLE DEFAULT 0,    -- Continuous Assessment (out of 100)
+    final_marks DOUBLE DEFAULT 0,   -- Final Exam (out of 100)
+    UNIQUE KEY uq_student_course (student_id, course_code)
+);
+
+-- ============================================================
+-- MEMBER 2 – Sample Attendance Data (covers all 5 scenarios)
+-- ============================================================
+
+-- Helper: sessions 1-15 for each course
+-- THEORY sessions
+INSERT INTO attendance (student_id, course_code, session_no, session_type, is_present, session_date)
+SELECT
+    u.username,
+    c.course_code,
+    s.n,
+    'THEORY',
+    CASE
+        -- TG1701 & TG1702: >80% (attend 13/15 = 86%)
+        WHEN u.username IN ('TG1701','TG1702') AND s.n <= 13 THEN 1
+        WHEN u.username IN ('TG1701','TG1702') AND s.n >  13 THEN 0
+        -- TG17013 & TG1704: exactly 80% (attend 12/15)
+        WHEN u.username IN ('TG17013','TG1704') AND s.n <= 12 THEN 1
+        WHEN u.username IN ('TG17013','TG1704') AND s.n >  12 THEN 0
+        -- TG1705 & TG1706: <80% no medicals (attend 10/15 = 66%)
+        WHEN u.username IN ('TG1705','TG1706') AND s.n <= 10 THEN 1
+        WHEN u.username IN ('TG1705','TG1706') AND s.n >  10 THEN 0
+        -- TG1707 & TG1708: <80% but WITH medicals (attend 10/15 raw)
+        WHEN u.username IN ('TG1707','TG1708') AND s.n <= 10 THEN 1
+        WHEN u.username IN ('TG1707','TG1708') AND s.n >  10 THEN 0
+        -- TG1709–TG1720: >80% with medicals (attend 11/15, medical covers 2 absences)
+        WHEN s.n <= 11 THEN 1
+        ELSE 0
+    END,
+    DATE_ADD('2026-01-05', INTERVAL (s.n - 1) * 7 DAY)
+FROM
+    users u
+    JOIN courses c ON 1=1
+    JOIN (SELECT 1 n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5
+          UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10
+          UNION SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14 UNION SELECT 15) s
+WHERE u.role = 'STUDENT';
+
+-- PRACTICAL sessions (same logic)
+INSERT INTO attendance (student_id, course_code, session_no, session_type, is_present, session_date)
+SELECT
+    u.username,
+    c.course_code,
+    s.n,
+    'PRACTICAL',
+    CASE
+        WHEN u.username IN ('TG1701','TG1702') AND s.n <= 13 THEN 1
+        WHEN u.username IN ('TG1701','TG1702') AND s.n >  13 THEN 0
+        WHEN u.username IN ('TG17013','TG1704') AND s.n <= 12 THEN 1
+        WHEN u.username IN ('TG17013','TG1704') AND s.n >  12 THEN 0
+        WHEN u.username IN ('TG1705','TG1706') AND s.n <= 10 THEN 1
+        WHEN u.username IN ('TG1705','TG1706') AND s.n >  10 THEN 0
+        WHEN u.username IN ('TG1707','TG1708') AND s.n <= 10 THEN 1
+        WHEN u.username IN ('TG1707','TG1708') AND s.n >  10 THEN 0
+        WHEN s.n <= 11 THEN 1
+        ELSE 0
+    END,
+    DATE_ADD('2026-01-07', INTERVAL (s.n - 1) * 7 DAY)
+FROM
+    users u
+    JOIN courses c ON 1=1
+    JOIN (SELECT 1 n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5
+          UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10
+          UNION SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14 UNION SELECT 15) s
+WHERE u.role = 'STUDENT';
+
+-- Medical records for TG1707, TG1708 (absent sessions 11-15 covered by medical)
+-- and TG1709-TG1720 (absent sessions 12-15 covered, giving effective >80%)
+INSERT INTO medicals (student_id, from_date, to_date, reason, is_approved) VALUES
+('TG1707', '2026-03-10', '2026-03-24', 'Fever and flu', 1),
+('TG1708', '2026-03-10', '2026-03-24', 'Dengue fever', 1),
+('TG1709', '2026-03-17', '2026-03-31', 'Medical procedure', 1),
+('TG1710', '2026-03-17', '2026-03-31', 'Viral infection', 0),
+('TG1711', '2026-03-17', '2026-03-31', 'Surgery recovery', 1);
+
+-- ============================================================
+-- MEMBER 3 – Sample Marks Data
+-- ============================================================
+INSERT INTO marks (student_id, course_code, ca_marks, final_marks) VALUES
+-- TG1701: passes all CA, good final
+('TG1701','ICT2132', 75, 80), ('TG1701','ICT2122', 68, 72), ('TG1701','ICT2112', 82, 78),
+('TG1701','ICT2142', 71, 69), ('TG1701','ICT2152', 65, 70),
+-- TG1702
+('TG1702','ICT2132', 55, 60), ('TG1702','ICT2122', 72, 68), ('TG1702','ICT2112', 48, 55),
+('TG1702','ICT2142', 80, 75), ('TG1702','ICT2152', 62, 58),
+-- TG17013: CA fail in one subject
+('TG17013','ICT2132', 38, 50), ('TG17013','ICT2122', 55, 60), ('TG17013','ICT2112', 70, 65),
+('TG17013','ICT2142', 44, 48), ('TG17013','ICT2152', 60, 55),
+-- TG1704
+('TG1704','ICT2132', 90, 88), ('TG1704','ICT2122', 85, 82), ('TG1704','ICT2112', 78, 80),
+('TG1704','ICT2142', 88, 91), ('TG1704','ICT2152', 76, 79),
+-- TG1705
+('TG1705','ICT2132', 42, 45), ('TG1705','ICT2122', 50, 52), ('TG1705','ICT2112', 35, 40),
+('TG1705','ICT2142', 60, 55), ('TG1705','ICT2152', 48, 50),
+-- TG1706
+('TG1706','ICT2132', 65, 70), ('TG1706','ICT2122', 58, 62), ('TG1706','ICT2112', 72, 68),
+('TG1706','ICT2142', 55, 60), ('TG1706','ICT2152', 70, 75),
+-- TG1707
+('TG1707','ICT2132', 50, 55), ('TG1707','ICT2122', 45, 48), ('TG1707','ICT2112', 60, 58),
+('TG1707','ICT2142', 52, 50), ('TG1707','ICT2152', 48, 52),
+-- TG1708
+('TG1708','ICT2132', 78, 82), ('TG1708','ICT2122', 72, 68), ('TG1708','ICT2112', 65, 70),
+('TG1708','ICT2142', 80, 77), ('TG1708','ICT2152', 68, 72),
+-- TG1709 – TG1720 (quick inserts)
+('TG1709','ICT2132',60,65),('TG1709','ICT2122',55,58),('TG1709','ICT2112',70,68),('TG1709','ICT2142',65,60),('TG1709','ICT2152',58,62),
+('TG1710','ICT2132',45,50),('TG1710','ICT2122',62,60),('TG1710','ICT2112',55,52),('TG1710','ICT2142',70,68),('TG1710','ICT2152',48,55),
+('TG1711','ICT2132',82,85),('TG1711','ICT2122',78,80),('TG1711','ICT2112',88,86),('TG1711','ICT2142',75,78),('TG1711','ICT2152',80,82),
+('TG1712','ICT2132',55,58),('TG1712','ICT2122',48,52),('TG1712','ICT2112',62,60),('TG1712','ICT2142',50,55),('TG1712','ICT2152',58,60),
+('TG1713','ICT2132',70,72),('TG1713','ICT2122',65,68),('TG1713','ICT2112',75,70),('TG1713','ICT2142',68,72),('TG1713','ICT2152',72,75),
+('TG1714','ICT2132',38,42),('TG1714','ICT2122',55,50),('TG1714','ICT2112',45,48),('TG1714','ICT2142',60,58),('TG1714','ICT2152',42,45),
+('TG1715','ICT2132',68,70),('TG1715','ICT2122',72,75),('TG1715','ICT2112',65,68),('TG1715','ICT2142',78,80),('TG1715','ICT2152',70,72),
+('TG1716','ICT2132',50,52),('TG1716','ICT2122',58,60),('TG1716','ICT2112',55,58),('TG1716','ICT2142',48,50),('TG1716','ICT2152',62,65),
+('TG1717','ICT2132',85,88),('TG1717','ICT2122',80,82),('TG1717','ICT2112',78,80),('TG1717','ICT2142',88,85),('TG1717','ICT2152',82,85),
+('TG1718','ICT2132',42,45),('TG1718','ICT2122',50,48),('TG1718','ICT2112',38,42),('TG1718','ICT2142',55,52),('TG1718','ICT2152',45,48),
+('TG1719','ICT2132',72,75),('TG1719','ICT2122',68,70),('TG1719','ICT2112',75,72),('TG1719','ICT2142',65,68),('TG1719','ICT2152',70,73),
+('TG1720','ICT2132',60,62),('TG1720','ICT2122',55,58),('TG1720','ICT2112',65,60),('TG1720','ICT2142',70,68),('TG1720','ICT2152',58,62);
