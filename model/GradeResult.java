@@ -1,8 +1,8 @@
 package model;
 
-// -------------------------------------------------------
+
 // GradeResult – calculate grade information
-// -------------------------------------------------------
+
 public class GradeResult {
 
     private String studentId;
@@ -10,10 +10,10 @@ public class GradeResult {
     private String courseCode;
     private int    credits;
     private double caMarks;
-    private double finalMarks;  // End exam marks (out of 60)
-    private double totalMarks;  // CA + End exam (out of 100)
-    private String grade;       // A+, A, B+, … E
-    private double gradePoint;  // 4.0, 3.7, …
+    private double finalMarks;  
+    private double totalMarks;  
+    private String grade;       
+    private double gradePoint;  
 
     public GradeResult(String studentId, String studentName,
                        String courseCode, int credits,
